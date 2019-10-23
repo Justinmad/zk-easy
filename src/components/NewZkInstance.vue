@@ -15,22 +15,22 @@
         <span class="headline">{{title}} Instance</span>
       </v-card-title>
       <v-card-text>
-        <v-form v-if="value" ref="zkForm"
+        <v-form ref="zkForm"
                 v-model="valid">
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field label="Host" v-model="value.host" persistent-hint
+                <v-text-field label="Host" v-model="edit.host" persistent-hint
                               :placeholder="defaultHost"
                               hint="Default is localhost"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="Title" v-model="value.title" persistent-hint :error-messages="errMsg"
-                              :placeholder="value.host"
+                <v-text-field label="Title" v-model="edit.title" persistent-hint :error-messages="errMsg"
+                              :placeholder="edit.host"
                               hint="Default is host name"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="Port" v-model="value.port" type="number" :rules="rules" persistent-hint
+                <v-text-field label="Port" v-model="edit.port" type="number" :rules="rules" persistent-hint
                               :placeholder="defaultPort"
                               hint="Default is 2181"></v-text-field>
               </v-col>
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-  import {default as ZkConnection, DefaultHost, DefaultPort} from "../scripts/ZkConnectionWrapper"
+  import ZkConnectionWrapper, {DefaultHost, DefaultPort} from "../scripts/ZkConnectionWrapper"
 
   export default {
     name: "NewZkInstance",
@@ -74,21 +74,35 @@
       ],
       errMsg: null,
       defaultHost: DefaultHost,
-      defaultPort: DefaultPort.toString()
+      defaultPort: DefaultPort.toString(),
+      edit: {}
     }),
     methods: {
       doSave() {
         if (this.$refs.zkForm.validate()) {
-          this.value.host = this.value.host || DefaultHost
-          this.value.port = this.value.port || DefaultPort
-          this.value.title = this.value.title || `${this.value.host}:${this.value.port}`
-          if (!(this.value instanceof ZkConnection) && this.exists.has(this.value.title)) {
-            this.errMsg = `名称${this.value.title}已存在`
+          this.edit.host = this.edit.host || DefaultHost
+          this.edit.port = this.edit.port || DefaultPort
+          this.edit.title = this.edit.title || `${this.edit.host}:${this.edit.port}`
+          if (this.existsTitle()) {
+            this.errMsg = `名称${this.edit.title}已存在`
             return
           }
-          this.$emit("create", this.value)
+          if (this.edit instanceof ZkConnectionWrapper) {
+            this.$emit("input", this.edit)
+          } else {
+            this.$emit("create", this.edit)
+          }
           this.doClose();
         }
+      },
+      existsTitle() {
+        let title = this.edit.title;
+        for (let instance of this.exists) {
+          if (instance.title === title && instance !== this.value) {
+            return true
+          }
+        }
+        return false
       },
       doClose() {
         this.dialog = false
@@ -109,10 +123,17 @@
         }
       }
     },
-    props: {
-      exists: Set,
-      value: Object,
-    }
+    watch: {
+      value(newVal) {
+        if (newVal) {
+          this.edit = {...newVal}
+        }
+      }
+    },
+    props: [
+      'exists',
+      'value',
+    ]
   }
 </script>
 

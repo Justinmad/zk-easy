@@ -120,7 +120,6 @@
 </template>
 
 <script>
-  import AceEditor from "./AceEditor";
   import AddZkNode from "./AddZkNode";
   import NodeEditor from "./NodeEditor";
   import {parseStat} from "../scripts/Utils";
@@ -129,7 +128,7 @@
 
   export default {
     name: "ZkTreeView",
-    components: {NodeEditor, AddZkNode, AceEditor},
+    components: {NodeEditor, AddZkNode},
     data: () => ({
       isActive: false,
       items: [

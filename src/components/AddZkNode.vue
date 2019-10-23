@@ -58,12 +58,11 @@
 </template>
 
 <script>
-  import AceEditor from "./AceEditor";
   import NodeEditor from "./NodeEditor";
 
   export default {
     name: "AddZkNode",
-    components: {NodeEditor, AceEditor},
+    components: {NodeEditor},
     data: () => ({
       dialog: false,
       valid: false,
