@@ -14,7 +14,7 @@
       v-for="i in opened"
       :key="i.title"
     >
-      <ZkTreeView :client="i.client"/>
+      <ZkTreeView :client="i"/>
     </v-tab-item>
   </v-tabs>
 </template>

@@ -65,29 +65,19 @@
       save(config) {
         this.instances.push(new ZkConnection(config));
       }, doOpen(instance) {
-        if (!instance.connected) {
-          instance.loading = true
-          instance.onConnected = () => {
-            this.$emit('open', instance)
-            this.$success("Connected")
-          }
-          instance.init()
-          setTimeout(() => {
-            if (!instance.connected) {
-              this.$error(`Connect to server ${instance.title} timeout !`)
-              instance.loading = false
-            }
-          }, 5000)
-        }
+        instance.init().then(() => {
+          this.$emit('open', instance)
+          this.$success("Connected")
+        }).catch(e => {
+          this.$error(e)
+        })
       }, doClose(instance) {
-        if (instance.connected) {
-          instance.loading = true
-          instance.onClosed = () => {
-            this.$emit('close', instance)
-            this.$info("Closed")
-          }
-          instance.close()
-        }
+        instance.close().then(() => {
+          this.$emit('close', instance)
+          this.$info("Closed")
+        }).catch(e => {
+          this.$error(e)
+        })
       }, editConn(instance) {
         if (instance.connected) {
           this.doClose(instance)

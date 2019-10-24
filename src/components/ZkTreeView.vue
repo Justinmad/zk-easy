@@ -122,9 +122,7 @@
 <script>
   import AddZkNode from "./AddZkNode";
   import NodeEditor from "./NodeEditor";
-  import {parseStat} from "../scripts/Utils";
-
-  const EMPTY = Buffer.alloc(0)
+  import ZkConnection from "../scripts/ZkConnectionWrapper";
 
   export default {
     name: "ZkTreeView",
@@ -154,56 +152,36 @@
         if (!item.children || item.children.length !== 0) {
           item.children = []
         }
-        let func = resolve => {
-          this.client.getChildren(item.fullPath || item.name, (error, children) => {
-            if (error) {
-              this.$error(error)
-
-            } else {
-              if (children.length > 0) {
-                for (let child of children) {
-                  item.children.push({
-                    name: child,
-                    fullPath: `${item.fullPath}/${child}`,
-                    children: [],
-                    tooltips: false,
-                    parent: item,
-                  })
-                }
-              } else {
-                item.children = undefined
+        return this.client.getChildren(item.fullPath || item.name)
+          .then(children => {
+            if (children.length > 0) {
+              for (let child of children) {
+                item.children.push({
+                  name: child,
+                  fullPath: `${item.fullPath}/${child}`,
+                  children: [],
+                  tooltips: false,
+                  parent: item,
+                })
               }
+            } else {
+              item.children = undefined
             }
-            resolve()
           })
-        }
-        return new Promise(func);
-      },
-      formatJson(nodeData, space) {
-        try {
-          let parse = JSON.parse(nodeData)
-          nodeData = JSON.stringify(parse, null, space)
-          return nodeData;
-        } catch (e) {
-          return nodeData;
-        }
+          .catch(error => this.$error(error))
       },
       input(actives) {
         if (actives.length > 0) {
           let item = actives[0];
           let fullPath = item.fullPath || '/';
-          return this.client.getData(fullPath, (error, data, stat) => {
-            let nodeData = data && data.toString() || ''
-            if (nodeData) {
-              nodeData = this.formatJson(nodeData, 2);
-            }
-            this.selected = {
-              metadata: parseStat(stat),
-              data: nodeData,
-              fullPath,
-              item: item
-            };
-          })
+          return this.client.getData(fullPath)
+            .then(res => {
+              this.selected = {
+                ...res,
+                fullPath,
+                item
+              };
+            }).catch(e => this.$error(e))
         } else {
           this.selected = null
         }
@@ -225,63 +203,42 @@
           message: `Confirm to delete the node: ${this.selected.fullPath}`,
           checkbox: 'Remove recursive',
           callback: (recursive) => {
-            try {
-              this.loading.delete = true
-              let cb = (error) => {
-                if (error) {
-                  this.$error(error)
-                } else {
-                  this.$success("delete success")
-                  if (this.selected.item.parent) {
-                    this.fetchNodes(this.selected.item.parent)
-                  }
+            this.loading.delete = true
+            this.client.delete(this.selected.fullPath, this.selected.metadata.version, recursive)
+              .then(() => {
+                this.$success("delete success")
+                if (this.selected.item.parent) {
+                  this.fetchNodes(this.selected.item.parent)
                 }
-                this.loading.delete = false
-              }
-              if (recursive) {
-                this.client.removeRecursive(this.selected.fullPath, -1, cb)
-              } else {
-                this.client.remove(this.selected.fullPath, this.selected.metadata.version, cb)
-              }
-            } catch (e) {
-              this.$error(e)
-              this.loading.delete = false
-            }
+              })
+              .catch(e => this.$error(e))
+              .finally(() => this.loading.delete = false)
           }
         })
       },
       doSave() {
         this.loading.save = true
-        let data = this.selected.data ? Buffer.from(this.formatJson(this.selected.data)) : EMPTY;
-        this.client.setData(this.selected.fullPath, data, this.selected.metadata.version,
-          (error) => {
-            if (error) {
-              this.$error(error)
-
-            } else {
-              this.$success("save success")
-              this.fetchNodes(this.selected.item);
-            }
-            this.loading.save = false
-          })
+        this.client.setData(this.selected.fullPath, this.selected.data, this.selected.metadata.version)
+          .then(() => {
+            this.$success("save success")
+            this.fetchNodes(this.selected.item);
+          }).catch(e => this.$error(e))
+          .finally(() => this.loading.save = false)
       },
       doAdd(node) {
         this.loading.save = true
-        let parentPath = this.selected.fullPath === '/' ? '' : this.selected.fullPath;
-        this.client.create(`${parentPath}/${node.path}`, node.data ? Buffer.from(node.data) : EMPTY, node.mode,
-          (error, path) => {
-            if (error) {
-              this.$error(error)
-            } else {
-              this.$success(`Node: ${path} is created`)
-              this.fetchNodes(this.selected.item)
-            }
-            this.loading.add = false
+        let path = `${this.selected.fullPath === '/' ? '' : this.selected.fullPath}/${node.path}`;
+        this.client.create(path, node.data, node.mode)
+          .then(() => {
+            this.$success(`Node: ${path} is created`)
+            this.fetchNodes(this.selected.item)
           })
+          .catch(e => this.$error(e))
+          .finally(() => this.loading.add = false)
       }
     },
     props: {
-      client: {type: Object}
+      client: {type: ZkConnection}
     }
   }
 </script>
