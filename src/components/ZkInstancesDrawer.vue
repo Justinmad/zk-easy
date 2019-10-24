@@ -21,7 +21,7 @@
             <v-list-item @click="editConn(item)">
               <v-list-item-title>edit</v-list-item-title>
             </v-list-item>
-            <v-list-item @click="deleteConn">
+            <v-list-item @click="deleteConn(item)">
               <v-list-item-title>delete</v-list-item-title>
             </v-list-item>
           </v-list>
