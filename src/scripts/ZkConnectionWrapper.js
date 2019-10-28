@@ -26,6 +26,7 @@ function dataUnwrapper(data) {
 
 export default class ZkConnectionWrapper {
   title
+  menu
   view
   client
   loading = false
@@ -34,6 +35,7 @@ export default class ZkConnectionWrapper {
   onClosed
   host
   port
+  timeoutId
 
   constructor(c) {
     if (c.host && c.port) {
@@ -46,7 +48,7 @@ export default class ZkConnectionWrapper {
     }
   }
 
-  init() {
+  init(onClosed) {
     this.loading = true
     return new Promise((resolve, reject) => {
       if (!this.client || !this.connected) {
@@ -56,17 +58,23 @@ export default class ZkConnectionWrapper {
           spinDelay: 1000,
           retries: 0
         })
-        let timeoutId = setTimeout(() => {
+        this.timeoutId = setTimeout(() => {
           if (!this.connected) {
             this.loading = false
             reject("Connection Timeout")
           }
         }, 5000)
         newZk.once("connected", () => {
-          clearTimeout(timeoutId)
+          clearTimeout(this.timeoutId)
           this.connected = true
           this.loading = false
           resolve()
+        })
+        newZk.once("disconnected", () => {
+          clearTimeout(this.timeoutId)
+          this.connected = false
+          this.loading = false
+          typeof onClosed === 'function' && onClosed()
         })
         this.client = newZk
         this.client.connect()
@@ -79,11 +87,15 @@ export default class ZkConnectionWrapper {
 
   close() {
     this.loading = true
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (this.client && this.connected) {
+        this.timeoutId = setTimeout(() => {
+          if (this.connected) {
+            this.loading = false
+            reject("Disconnected Timeout")
+          }
+        }, 5000)
         this.client.once("disconnected", () => {
-          this.connected = false
-          this.loading = false
           resolve()
         })
         this.client.close();

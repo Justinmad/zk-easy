@@ -58,9 +58,7 @@
             this.client.delete(this.selected.fullPath, this.selected.metadata.version, recursive)
               .then(() => {
                 this.$success("delete success")
-                if (this.selected.item.parent) {
-                  this.$emit("delete", this.selected)
-                }
+                this.$emit("delete", this.selected)
               })
               .catch(e => this.$error(e))
               .finally(() => this.loading.delete = false)

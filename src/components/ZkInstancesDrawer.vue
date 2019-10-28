@@ -81,15 +81,15 @@
       save(config) {
         this.instances.push(new ZkConnection(config));
       }, doOpen(instance) {
-        instance.init().then(() => {
+        instance.init(() => {
+          this.$emit('close', instance)
+        }).then(() => {
           this.$emit('open', instance)
         }).catch(e => {
           this.$error(e)
         })
       }, doClose(instance) {
-        instance.close().then(() => {
-          this.$emit('close', instance)
-        }).catch(e => {
+        instance.close().catch(e => {
           this.$error(e)
         })
       }, editConn(instance) {

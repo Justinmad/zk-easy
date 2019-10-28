@@ -67,8 +67,8 @@
             Select a Node
           </div>
           <NodeDataView v-else :selected="selected" height="calc(100vh - 190px)" :client="client"
-                        @save="d => fetchNodes(d.item)" @create="d => fetchNodes(d.item)"
-                        @delete="d => fetchNodes(d.item.parent)"/>
+                        @save="d => fetchNodes(d)" @create="d => fetchNodes(d)"
+                        @delete="d => d.parent && fetchNodes(d.parent)"/>
         </v-scroll-y-transition>
       </v-col>
     </v-row>
@@ -128,21 +128,19 @@
       doSelect(actives) {
         if (actives.length > 0) {
           if (this.selected) {
-            this.selected.item.refresh = false
+            this.selected.refresh = false
           }
           let item = actives[0]
           let fullPath = item.fullPath || '/'
           return this.client.getData(fullPath)
             .then(res => {
-              this.selected = {
-                ...res,
-                fullPath,
-                item
-              };
               item.refresh = true
+              this.selected = item;
+              this.selected.data = res.data;
+              this.selected.metadata = res.metadata;
             }).catch(e => this.$error(e))
         } else {
-          this.selected.item.refresh = false
+          this.selected.refresh = false
           this.selected = null
         }
       },

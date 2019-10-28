@@ -4,7 +4,7 @@
       style="height: calc(100vh - 72px);">
       <v-card flat :height="selected?'50%':'100%'">
         <v-toolbar dense floating>
-          <v-btn icon :disabled="paths.length<1" @click="goBack">
+          <v-btn icon :disabled="paths.length<1" :loading="goBackLoading" @click="goBack">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <v-btn icon @click="refreshDir">
@@ -26,12 +26,13 @@
                 :key="dir.name">
                 <v-item>
                   <div class="text-center">
-                    <v-icon
-                      x-large
-                      :color="dir.active ? 'primary' : ''"
-                      @click.prevent.default="handleClick(dir)">
-                      mdi-folder
-                    </v-icon>
+                    <v-btn text :loading="dir.loading" :color="dir.active ? 'primary' : 'black'">
+                      <v-icon
+                        x-large
+                        @click.prevent="handleClick(dir)">
+                        mdi-folder
+                      </v-icon>
+                    </v-btn>
                     <div>{{decodeURIComponent(dir.name)||'/'}}</div>
                   </div>
                 </v-item>
@@ -41,25 +42,24 @@
         </v-item-group>
       </v-card>
       <NodeDataView v-if="selected" height="calc(50vh - 125px)" :client="client" :selected="selected"
-                    @save="refreshData" @delete="refreshDir" @create="refreshDir"
+                    @save="refreshData" @delete="doDelete" @create="refreshDir"
       ></NodeDataView>
     </v-container>
   </v-card>
 </template>
 
 <script>
-  import NodeEditor from "./NodeEditor";
-  import ObjectIterator from "./ObjectIterator";
   import ZkConnectionWrapper from "../scripts/ZkConnectionWrapper";
   import NodeDataView from "./NodeDataView";
 
   export default {
     name: "ZkDirectoryView",
-    components: {NodeDataView, ObjectIterator, NodeEditor},
+    components: {NodeDataView},
     data: () => ({
       paths: [],
       items: [],
       selected: null,
+      goBackLoading: false,
       search: null,
       click: {
         count: 0,
@@ -94,7 +94,7 @@
         }
         if (this.items.length === 0) {
           this.selected = {
-            name: basePath,
+            name: this.paths.length > 0 ? this.paths.length[this.paths.length - 1] : "/",
             fullPath: basePath,
             active: true, data: null,
             metadata: null
@@ -104,19 +104,24 @@
           if (this.selected) this.refreshData()
         }
       },
-      entryDir(dir) {
+      async entryDir(dir) {
         this.search = null
         this.selected = null
         this.paths.push(dir)
-        this.refreshDir()
+        return this.refreshDir()
       },
       goBack() {
         this.paths.pop()
         this.selected = null
-        this.refreshDir()
+        this.goBackLoading = true
+        this.refreshDir().finally(() => this.goBackLoading = false)
       },
       refreshData() {
         this.refreshDataInternal(this.selected.name)
+      },
+      doDelete(s) {
+        this.selected = null
+        this.refreshDir(s)
       },
       refreshDataInternal(p) {
         let path = this.calcBasePath(p)
@@ -146,7 +151,8 @@
         } else if (this.click.count === 2) {
           clearTimeout(this.click.timer)
           this.click.count = 0
-          this.entryDir(dir.name)
+          dir.loading = true
+          this.entryDir(dir.name).finally(() => dir.loading = false)
         }
       }
     },
@@ -162,7 +168,8 @@
           name: name,
           active: this.selected && this.selected.name === name,
           data: null,
-          metadata: null
+          metadata: null,
+          loading: false
         }))
       }
     },
