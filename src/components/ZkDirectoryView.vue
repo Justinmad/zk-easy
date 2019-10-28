@@ -41,7 +41,7 @@
         </v-item-group>
       </v-card>
       <NodeDataView v-if="selected" height="calc(50vh - 125px)" :client="client" :selected="selected"
-                    @save="refreshData" @delete="refreshDir" @create="refreshDir"
+                    @save="refreshData" @delete="doDelete" @create="refreshDir"
       ></NodeDataView>
     </v-container>
   </v-card>
@@ -94,7 +94,7 @@
         }
         if (this.items.length === 0) {
           this.selected = {
-            name: basePath,
+            name: this.paths.length > 0 ? this.paths.length[this.paths.length - 1] : "/",
             fullPath: basePath,
             active: true, data: null,
             metadata: null
@@ -117,6 +117,10 @@
       },
       refreshData() {
         this.refreshDataInternal(this.selected.name)
+      },
+      doDelete(s) {
+        this.selected = null
+        this.refreshDir(s)
       },
       refreshDataInternal(p) {
         let path = this.calcBasePath(p)

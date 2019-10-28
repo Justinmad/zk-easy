@@ -26,6 +26,7 @@ function dataUnwrapper(data) {
 
 export default class ZkConnectionWrapper {
   title
+  menu
   view
   client
   loading = false
