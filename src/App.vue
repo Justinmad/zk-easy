@@ -30,7 +30,8 @@
         }
       },
       openClient(instance) {
-        this.opened.push(instance);
+        this.opened.push(instance)
+        this.selectClient(instance)
       },
       closeClient(instance) {
         this.opened.splice(this.opened.indexOf(instance), 1);

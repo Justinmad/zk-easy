@@ -4,7 +4,7 @@
     width="600"
     persistent>
     <template v-slot:activator="{ on }">
-      <v-btn x-small text color="primary" v-on="on">
+      <v-btn x-small text color="primary" v-on="on" :loading="loading">
         add
       </v-btn>
     </template>
@@ -91,7 +91,7 @@
         }
       }
     },
-    props: {value: Object}
+    props: ['loading']
   }
 </script>
 

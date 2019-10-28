@@ -11,6 +11,22 @@
     <v-list dense nav>
       <v-list-item v-for="(item,i) in instances" :key="i"
                    @click="$emit('select',item)">
+        <v-list-item-icon>
+          <v-btn icon small>
+            <v-tooltip v-if="item.view==='tree'" right>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" @click="item.view='directory'">mdi-file-tree</v-icon>
+              </template>
+              <span>Change to directory view</span>
+            </v-tooltip>
+            <v-tooltip v-else right>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" @click="item.view='tree'">mdi-folder-multiple-outline</v-icon>
+              </template>
+              <span>Change to tree view</span>
+            </v-tooltip>
+          </v-btn>
+        </v-list-item-icon>
         <v-menu v-model="item.menu" offset-y bottom>
           <template v-slot:activator="{ on }">
             <v-list-item-content @mouseup="item.menu=true">
@@ -67,14 +83,12 @@
       }, doOpen(instance) {
         instance.init().then(() => {
           this.$emit('open', instance)
-          this.$success("Connected")
         }).catch(e => {
           this.$error(e)
         })
       }, doClose(instance) {
         instance.close().then(() => {
           this.$emit('close', instance)
-          this.$info("Closed")
         }).catch(e => {
           this.$error(e)
         })
@@ -98,7 +112,8 @@
             return {
               title: i.title,
               host: i.host,
-              port: i.port
+              port: i.port,
+              view: i.view,
             }
           }))
         }

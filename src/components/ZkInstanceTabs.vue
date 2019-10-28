@@ -1,6 +1,9 @@
 <template>
   <v-tabs
     v-model="tab"
+    show-arrows
+    next-icon="mdi-arrow-right-bold-box-outline"
+    prev-icon="mdi-arrow-left-bold-box-outline"
   >
     <v-tabs-slider></v-tabs-slider>
     <v-tab
@@ -14,17 +17,19 @@
       v-for="i in opened"
       :key="i.title"
     >
-      <ZkTreeView :client="i"/>
+      <ZkTreeView v-if="i.view === 'tree'" :client="i"/>
+      <ZkDirectoryView v-else :client="i"/>
     </v-tab-item>
   </v-tabs>
 </template>
 
 <script>
   import ZkTreeView from "./ZkTreeView";
+  import ZkDirectoryView from "./ZkDirectoryView";
 
   export default {
     name: "ZkInstanceTabs",
-    components: {ZkTreeView},
+    components: {ZkDirectoryView, ZkTreeView},
     data: () => ({}),
     computed: {
       tab: {
@@ -43,7 +48,7 @@
       opened: {
         type: Array
       },
-      value: Number
+      value: Number,
     },
   }
 </script>

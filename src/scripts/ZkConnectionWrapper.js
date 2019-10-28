@@ -26,7 +26,7 @@ function dataUnwrapper(data) {
 
 export default class ZkConnectionWrapper {
   title
-  menu
+  view
   client
   loading = false
   connected = false
@@ -40,6 +40,7 @@ export default class ZkConnectionWrapper {
       this.host = c.host || DefaultHost
       this.port = c.port || DefaultPort
       this.title = c.title || `${this.host}:${this.port}`
+      this.view = c.view || 'directory'
     } else {
       throw new Error(`Illegal Argument,host or port is null`);
     }
