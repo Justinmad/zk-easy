@@ -5,12 +5,13 @@ on: [push]
 jobs:
   build:
 
-    runs-on: [macOS-latest,windows-latest,ubuntu-latest]
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-latest,windows-latest,ubuntu-latest]
     steps:
-    - uses: Build dist
-    - name: yarn install
-      run: yarn
-    - name: Run yarn build
-      run: yarn electron:build
-    
+      - uses: actions/checkout@v1
+      - name: yarn install
+        run: yarn
+      - name: Run yarn build
+        run: yarn electron:build
