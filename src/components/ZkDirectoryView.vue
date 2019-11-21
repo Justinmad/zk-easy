@@ -24,18 +24,20 @@
                 v-for="dir in filterItems"
                 cols="2"
                 :key="dir.name">
-                <v-item>
-                  <div class="text-center">
-                    <v-btn text :loading="dir.loading" :color="dir.active ? 'primary' : 'black'">
-                      <v-icon
-                        x-large
-                        @click.prevent="handleClick(dir)">
-                        mdi-folder
-                      </v-icon>
-                    </v-btn>
-                    <div>{{decodeURIComponent(dir.name)||'/'}}</div>
-                  </div>
-                </v-item>
+                <v-lazy>
+                  <v-item>
+                    <div class="text-center">
+                      <v-btn text :loading="dir.loading" :color="dir.active ? 'primary' : 'black'">
+                        <v-icon
+                          x-large
+                          @click.prevent="handleClick(dir)">
+                          mdi-folder
+                        </v-icon>
+                      </v-btn>
+                      <div>{{decodeURIComponent(dir.name)||'/'}}</div>
+                    </div>
+                  </v-item>
+                </v-lazy>
               </v-col>
             </v-row>
           </v-container>
@@ -99,16 +101,17 @@
             active: true, data: null,
             metadata: null
           }
-          this.refreshDataInternal()
+          return this.refreshDataInternal()
         } else {
           if (this.selected) this.refreshData()
         }
       },
       async entryDir(dir) {
-        this.search = null
         this.selected = null
         this.paths.push(dir)
-        return this.refreshDir()
+        return this.refreshDir().finally(() => {
+          this.search = null
+        })
       },
       goBack() {
         this.paths.pop()
@@ -125,7 +128,7 @@
       },
       refreshDataInternal(p) {
         let path = this.calcBasePath(p)
-        this.client.getData(path)
+        return this.client.getData(path)
           .then(node => {
             this.selected.data = node.data
             this.selected.metadata = node.metadata
