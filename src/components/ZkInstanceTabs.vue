@@ -2,6 +2,7 @@
   <v-tabs
     v-model="tab"
     show-arrows
+    height="48"
     next-icon="mdi-arrow-right-bold-box-outline"
     prev-icon="mdi-arrow-left-bold-box-outline"
   >

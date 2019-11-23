@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card flat>
     <v-row
       class="pa-4"
       justify="space-between"
@@ -18,7 +18,7 @@
           ></v-text-field>
         </v-sheet>
         <v-treeview
-          style="height: calc(100vh - 178px);overflow-y: auto"
+          style="height: calc(100vh - 152px);overflow-y: auto"
           dense
           open-all
           :items="items"
@@ -66,7 +66,7 @@
           >
             Select a Node
           </div>
-          <NodeDataView v-else :selected="selected" height="calc(100vh - 190px)" :client="client"
+          <NodeDataView v-else :selected="selected" height="calc(100vh - 170px)" :client="client"
                         @save="d => fetchNodes(d)" @create="d => fetchNodes(d)"
                         @delete="d => d.parent && fetchNodes(d.parent)"/>
         </v-scroll-y-transition>

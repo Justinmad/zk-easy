@@ -1,13 +1,5 @@
 <template>
   <v-navigation-drawer permanent app>
-    <v-toolbar>
-      <v-toolbar-title class="title">
-        Connections
-      </v-toolbar-title>
-    </v-toolbar>
-
-    <v-divider></v-divider>
-
     <v-list dense nav>
       <v-list-item v-for="(item,i) in instances" :key="i"
                    @click="$emit('select',item)">

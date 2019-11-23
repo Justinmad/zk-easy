@@ -7,7 +7,7 @@
     <template v-slot:activator="{ on }">
       <v-btn block text v-on="on">
         <v-icon>mdi-plus</v-icon>
-        create
+        new connection
       </v-btn>
     </template>
     <v-card>

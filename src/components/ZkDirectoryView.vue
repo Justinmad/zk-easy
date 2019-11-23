@@ -1,7 +1,7 @@
 <template>
-  <v-card>
+  <v-card flat>
     <v-container
-      style="height: calc(100vh - 72px);">
+      style="height: calc(100vh - 48px);">
       <v-card flat :height="selected?'50%':'100%'">
         <v-toolbar dense floating>
           <v-btn icon :disabled="paths.length<1" :loading="goBackLoading" @click="goBack">
