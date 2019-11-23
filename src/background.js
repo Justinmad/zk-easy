@@ -1,6 +1,6 @@
 'use strict'
 
-import {app, BrowserWindow, ipcMain, protocol} from 'electron'
+import {app, BrowserWindow, protocol} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -18,22 +18,6 @@ function createWindow() {
     width: 800, height: 600, webPreferences: {
       nodeIntegration: true
     }, frame: false, titleBarStyle: 'hidden'
-  })
-
-  ipcMain.on('window-max', function () {
-    if (win.isMaximized()) {
-      win.unmaximize()
-    } else {
-      win.maximize();
-    }
-  })
-
-  ipcMain.on('window-min', function () {
-    win.minimize();
-  })
-
-  ipcMain.on('window-close', function () {
-    win.close();
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {

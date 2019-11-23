@@ -1,7 +1,7 @@
 <template>
   <v-card flat>
     <v-container
-      style="height: calc(100vh - 48px);">
+      style="height: calc(100vh - 58px);">
       <v-card flat :height="selected?'50%':'100%'">
         <v-toolbar dense floating>
           <v-btn icon :disabled="paths.length<1" :loading="goBackLoading" @click="goBack">
@@ -12,7 +12,7 @@
           </v-btn>
           <v-text-field
             hide-details
-            append-icon="mdi-magnify"
+            append-icon="Smdi-magnify"
             single-line
             v-model="search"
           ></v-text-field>
